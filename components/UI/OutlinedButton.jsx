@@ -3,7 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { Colors } from '../../constants/styles';
 
-const Button = ({ children, icon, onPress, style }) => {
+const OutlinedButton = ({ children, icon, onPress, style }) => {
   return (
     <Pressable
       onPress={onPress}
@@ -20,11 +20,10 @@ const Button = ({ children, icon, onPress, style }) => {
   );
 };
 
-export default Button;
+export default OutlinedButton;
 
 const styles = StyleSheet.create({
   button: {
-    width: '100%',
     paddingHorizontal: 12,
     paddingVertical: 6,
     margin: 4,
