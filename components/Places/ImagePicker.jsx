@@ -10,21 +10,25 @@ import OutlinedButton from '../UI/OutlinedButton';
 
 import { Colors } from '../../constants/styles';
 
-const ImagePicker = () => {
+const ImagePicker = ({ onImagePick }) => {
   const [pickedImage, setPickedImage] = useState(null);
-  console.log('pickedImage', pickedImage);
 
   const [cameraPermissionInformation, requestPermission] =
     useCameraPermissions();
 
   const verifyPermissions = async () => {
-    if (cameraPermissionInformation.status === PermissionStatus.UNDETERMINED) {
+    const { status } = cameraPermissionInformation;
+
+    if (
+      status === PermissionStatus.UNDETERMINED ||
+      status === PermissionStatus.DENIED
+    ) {
       const permissionResponse = await requestPermission();
 
       return permissionResponse.granted;
     }
 
-    if (cameraPermissionInformation.status === PermissionStatus.DENIED) {
+    if (status === PermissionStatus.DENIED) {
       Alert.alert(
         'Insufficient permissions!',
         'You need to grant camera permissions to use this app.',
@@ -53,6 +57,7 @@ const ImagePicker = () => {
 
     if (image.assets[0].uri) {
       setPickedImage(image.assets[0].uri);
+      onImagePick(image.assets[0].uri);
     }
   };
 
@@ -86,6 +91,7 @@ const styles = StyleSheet.create({
   },
   image: {
     width: '100%',
-    height: '100%'
+    height: '100%',
+    borderRadius: 4
   }
 });
