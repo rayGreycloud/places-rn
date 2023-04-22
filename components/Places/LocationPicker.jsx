@@ -1,17 +1,26 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, Image, StyleSheet, Text, View } from 'react-native';
 import {
   getCurrentPositionAsync,
   useForegroundPermissions,
   PermissionStatus
 } from 'expo-location';
+import {
+  useIsFocused,
+  useNavigation,
+  useRoute
+} from '@react-navigation/native';
 
 import OutlinedButton from '../UI/OutlinedButton';
 
 import { Colors } from '../../constants/styles';
-import { getMapPreview } from '../../utils/location';
+import { getAddressFromCoords, getMapPreview } from '../../utils/location';
 
-const LocationPicker = () => {
+const LocationPicker = ({ onLocationPick }) => {
+  const isFocused = useIsFocused();
+  const navigation = useNavigation();
+  const route = useRoute();
+
   const [pickedLocation, setPickedLocation] = useState(null);
   console.log('pickedLocation', pickedLocation);
 
@@ -21,6 +30,33 @@ const LocationPicker = () => {
     'locationPermissionInformation.status: ',
     locationPermissionInformation?.status
   );
+
+  useEffect(() => {
+    if (isFocused && route.params) {
+      const mapPickedLocation = {
+        lat: route.params.pickedLocation.lat,
+        lng: route.params.pickedLocation.lng
+      };
+
+      console.log('mapPickedLocation: ', mapPickedLocation);
+      setPickedLocation(mapPickedLocation);
+      onLocationPick(mapPickedLocation);
+    }
+  }, [isFocused, route.params]);
+
+  useEffect(() => {
+    async function updateLocation() {
+      if (pickedLocation) {
+        const address = await getAddressFromCoords(
+          pickedLocation.lat,
+          pickedLocation.lng
+        );
+        onLocationPick({ ...pickedLocation, address });
+      }
+    }
+
+    updateLocation();
+  }, [pickedLocation]);
 
   const verifyPermissions = async () => {
     console.log(
@@ -64,7 +100,9 @@ const LocationPicker = () => {
     });
   };
 
-  const pickOnMapHandler = () => {};
+  const pickOnMapHandler = () => {
+    navigation.navigate('Map');
+  };
 
   let locationPreview = <Text>No location chosen yet</Text>;
 
@@ -111,6 +149,7 @@ const styles = StyleSheet.create({
   },
   image: {
     width: '100%',
-    height: '100%'
+    height: '100%',
+    borderRadius: 4
   }
 });
